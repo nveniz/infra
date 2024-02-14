@@ -1,0 +1,64 @@
+---   
+  - name: Create users
+    tags: [users]
+    become: true
+    user:
+      name: "{{ item.name }}"
+      create_home: "{{item.createhome | bool | default(true)}}"
+      shell: "{{item.shell | default('/bin/bash')}}"
+      password: "{{ item.password | default(omit) | password_hash('sha512') }}"
+      state: "present"
+    with_items: "{{ system_users }}"
+    when: system_users | length > 0
+    no_log: true
+
+  - name: Add authorized public keys to users for ssh
+    tags: [users]
+    become: true
+    authorized_key:
+      user: "{{ item.name }}"
+      exclusive: true
+      key: "{{ lookup('file', item.ssh_key_path) }}"
+    when: 
+      - item.ssh_key_path is defined
+      - system_users | length > 0
+    with_items: "{{ system_users }}"
+
+  - name: Change owner user,group and permissions of a directory
+    tags: [users]
+    become: true
+    file:
+      path: "{{ item.path }}"
+      state: "directory"
+      owner: "{{ item.owner_user | default(omit) }}"
+      group: "{{ item.owner_group | default(omit)}}"
+      mode: "{{ item.permissions | default(omit)}}"
+    with_items: "{{ system_directory_perms_own }}"
+    when: system_directory_perms_own | length > 0
+
+  - name: Configure users with passwordless sudo
+    tags: [users]
+    become: true
+    lineinfile:
+      dest: /etc/sudoers
+      regexp: '^{{ item }}'
+      line: '{{ item }} ALL=(ALL) NOPASSWD: ALL'
+      state: present
+      validate: 'visudo -cf %s'
+      mode: 0440
+    with_items: "{{ system_sudoers_passwordless }}"
+    when: system_sudoers_passwordless | length > 0
+
+  - name: Configure users with passworded sudo
+    tags: [users]
+    become: true
+    lineinfile:
+      dest: /etc/sudoers
+      regexp: '^{{ item }}'
+      line: '{{ item }} ALL=(ALL) ALL'
+      state: present
+      validate: 'visudo -cf %s'
+      mode: 0440
+    with_items: "{{ system_sudoers_passworded }}"
+    when: system_sudoers_passworded | length > 0
+

@@ -1,0 +1,16 @@
+---
+    # Check that all variables are set
+    - include_tasks: init.yml
+      tags: ["containers","nginx","dockermail"]
+
+    # Setup nginx configs
+    - include_tasks: nginx.yml
+      tags: ["nginx"]
+
+    # Setup dockermail configs and DKIM 
+    - include_tasks: dockermail.yml
+      tags: ["dockermail"]
+
+    # Setup actual containers
+    - include_tasks: containers.yml
+      tags: ["containers","nginx","dockermail"]

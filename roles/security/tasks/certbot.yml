@@ -1,0 +1,81 @@
+---
+
+  - name: Test that all nessesarry variables are set
+    become: true
+    tags: [certbot]
+    assert:
+      that:
+        - certbot_dns_plugin | length > 0 
+        - certbot_user | length > 0 
+        - domain_name | length > 0 
+        - certbot_cron_renew_month 
+        - certbot_dir | length > 0 
+
+  - name: Check if user exists using getent
+    command: getent passwd {{ certbot_user }}
+    register: user_check
+    ignore_errors: true
+
+  - name: If user does not exist fail
+    tags: [certbot]
+    fail: 
+      msg: "The specified user '{{ certbot_user }}' does not exist, you need to create the user using the 'certbot_users' variable"
+    when: user_check.rc != 0
+
+  - name: Install nesseccary packages
+    become: true
+    tags: [certbot]
+    package:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - "{{ certbot_dns_plugin }}"
+      - cron
+
+  - name: Creating certbot directory
+    become: true
+    tags: [certbot]
+    file:
+      path: "{{certbot_dir}}"
+      state: directory
+
+  - name: Copy Certbot DNS API file
+    become: true
+    tags: [certbot]
+    template:
+      src: "{{ item.name }}.j2"
+      dest: "{{certbot_dir}}/{{ item.name }}"
+      owner: "{{certbot_user}}"
+      mode: "{{item.perms}}"
+    with_items:
+      - name: certbot_API
+        perms: 600
+      - name: certbot_renew.sh
+        perms: 700
+  - name: Add crontab for auto-renewCert
+    become: true
+    tags: [certbot]
+    cron:
+      name: "renewCertbot"
+      minute: "0"
+      hour: "0"
+      month: "{{certbot_cron_renew_month}}"
+      job: "certbot_renew.sh > /dev/null 2>&1"
+      user: "{{certbot_user}}"
+      state: present
+
+
+  - name: Set letsnecrypt dir to read-only permissions
+    become: true
+    tags: [certbot]
+    file:
+      path: /etc/letsencrypt/live
+      state: directory
+      mode: "0744"
+
+  - name: Certbot script dry-run
+    become: true
+    tags: [certbot]
+    shell: "{{certbot_dir}}/certbot_renew.sh {{domain_name}}"  
+    when: certbot_dryrun | bool
+    

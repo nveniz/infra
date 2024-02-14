@@ -1,0 +1,12 @@
+---
+  - name: Copy nginx configuration
+    become: false
+    tags: [ "nginx" ]
+    template:
+      src: "nginx/{{item }}.j2"
+      dest: "{{nginx_config_dir}}/{{item}}"
+      mode: 0600
+    with_items:
+      - nginx.conf
+
+# Make sure that {{nginx_data_dir}} exists and user has access to it

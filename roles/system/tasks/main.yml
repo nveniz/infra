@@ -1,0 +1,17 @@
+---
+    # Packages
+    - include_tasks: packages.yml
+      tags: ["packages"]
+
+    # Users
+    - include_tasks: users.yml
+      tags: ["users"]
+    # Git
+    - include_tasks: git.yml
+      when: system_git_setup | bool
+      tags: ["git"]
+    # Unattended updates
+    - include_tasks: automatic-updates.yml
+      when: system_autoupdate_enabled | bool
+      tags: ["autoupdates"]
+

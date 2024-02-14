@@ -1,0 +1,58 @@
+[DEFAULT]
+
+ignoreself = true
+maxmatches = 0
+
+{%if ansible_service_mgr == 'systemd' %}
+backend = systemd
+{% else %}
+backend = auto
+{% endif %}
+
+
+{%if fail2ban_ssh | bool%}
+[sshd]
+enabled = true
+port    = {{ssh_port}}
+filter  = sshd
+findtime = 2d
+maxretry = 10
+bantime = 1d
+bantime.increment = true
+bantime.factor = 7
+bantime.maxtime = 5w
+
+{% endif %}
+
+
+
+
+{% if fail2ban_dockermail | bool %}
+
+[dovecot]
+enabled = true
+logpath = {{fail2ban_dockermail_dovecot_logpath}}
+maxretry = 6
+findtime = 1w
+bantime = 1w
+
+
+[postfix]
+enabled = true
+mode = extra
+logpath = {{fail2ban_dockermail_postfix_logpath}}
+maxretry = 6
+findtime = 1w
+bantime = 1w
+
+{% if fail2ban_dockermail_sasl | bool %}
+[postfix-sasl]
+enabled = true
+logpath = {{fail2ban_dockermail_postfix-sasl_logpath}}
+maxretry = 6
+findtime = 1w
+bantime = 1w
+
+{% endif %}
+{% endif %}
+

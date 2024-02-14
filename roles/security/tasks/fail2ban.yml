@@ -1,0 +1,27 @@
+---
+  - name: Install fail2ban
+    tags: [fail2ban]
+    become: true
+    package:
+      name: fail2ban
+      state: present
+
+  - name: Copy fail2ban config file
+    become: true
+    tags: [fail2ban]
+    template:
+      src: "{{ item }}.j2"
+      dest: "/etc/fail2ban/{{ item }}"
+      owner: root
+      group: root
+      mode: 0644
+    with_items:
+      - jail.local
+  
+  - name: Start and enable fail2ban on boot
+    become: true
+    tags: [fail2ban]
+    service:
+      name: fail2ban
+      state: started
+      enabled: true

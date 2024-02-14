@@ -1,0 +1,18 @@
+---
+- name: restart ssh
+  service:
+  tags: [ssh]
+    name: ssh
+    state: "{{ ssh_restart_handler_state }}"
+
+- name: reload fail2ban
+  service:
+  tags: [fail2ban]
+    name: fail2ban
+    state: "{{ fail2ban_restart_handler_state }}"
+ 
+- name: restart firewall
+  service: 
+  tags: [firewall]
+    name: firewall 
+    state: restarted

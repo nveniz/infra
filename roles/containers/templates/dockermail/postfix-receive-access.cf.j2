@@ -1,0 +1,10 @@
+{% for account in dockermail_accounts %}
+  {% if account.restrict is defined %}
+    {% for restriction in account.restrict %}
+      {% if restriction == "receive" %}
+        {{ account.username }}@{{ domain_name }}   REJECT
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+

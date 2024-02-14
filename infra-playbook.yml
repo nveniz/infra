@@ -1,0 +1,20 @@
+---
+- hosts: all
+  tasks:
+    - name: Run tasks from system role
+      tags: ["packages", "autoupdates", "git", "users"]
+      include_role:
+        name: system
+    - name: Run tasks from security role
+      tags: ["ssh", "fail2ban", "firewall", "certbot"]
+      include_role:
+        name: security
+    - name: Run tasks from docker role
+      tags: ["docker"]
+      include_role: 
+        name: docker
+    - name: Run tasks from container role
+      tags: [ "containers", "dockermail", "nginx" ]
+      include_role: 
+        name: containers
+

@@ -1,0 +1,60 @@
+---  
+  - name: Check if user exists using getent
+    become: false
+    tags: [containers, nginx, dockermail]
+    command: getent passwd {{ docker_compose_user }}
+    register: user_check
+    ignore_errors: true
+  
+  - name: If docker user does not exist fail
+    become: false
+    fail: 
+      msg: "The specified user '{{ docker_compose_user }}' does not exist, you need to create the user using the 'certbot_users' variable"
+    when: user_check.rc != 0
+  
+  - name: Make sure that the  folders exists
+    become: false
+    tags: [containers, nginx, dockermail]
+    ansible.builtin.file:
+      path: "{{ item }}"
+      owner: "{{ docker_compose_user }}"
+      group: "{{ docker_compose_user }}"
+      state: directory
+    loop:
+      - "{{ docker_compose_dir }}"
+
+  - name: Copy the compose file
+    become: false
+    tags: [containers, nginx, dockermail]
+    template:
+      src: "{{ item }}.j2"
+      dest: "{{ docker_compose_dir }}/{{ item }}"
+    loop:
+      - docker-compose.yml
+
+  - name: Docker-compose up
+    become: false
+    community.docker.docker_compose:
+      docker_host: "{{ docker_socket | default(omit) }}"
+      project_src: "{{ docker_compose_dir }}"
+  
+  - name: Copy docker compose autoupdates script
+    become: false
+    tags: [containers, nginx, dockermail]
+    template: 
+       src: docker-compose-autoupdate.sh
+       dest: "{{ docker_compose_autoupdates_dir}}/autoupdates.sh"
+       mode: 0700
+  - name: Add crontab for docker compose autoupdates
+    become: false
+    tags: [containers, nginx, dockermail]
+    cron:
+      name: "ContainersAutoUpdates"
+      minute: "0"
+      hour: "0"
+      day: "7"
+      job: "{{docker_compose_autoupdates_dir}}/autoupdates.sh > /dev/null 2>&1"
+      user: "{{docker_compose_user}}"
+      state: present
+  
+

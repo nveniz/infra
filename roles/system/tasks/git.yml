@@ -1,0 +1,54 @@
+---
+  - name: Check that all variables are set
+    become: true
+    tags: [git]
+    assert:
+      that:
+        - system_git_user | length > 0
+        - system_git_repo_src | length > 0
+        - system_git_repo_dest | length > 0
+
+  - name: If git user not set fail
+    tags: [git]
+    fail:
+      msg: "The variable 'system_git_user' must be set in order setup a repository for them"
+    when: system_git_user is not defined
+
+  - name: Check if user exists using getent
+    tags: [git]
+    command: getent passwd {{ system_git_user }}
+    register: user_check
+    ignore_errors: true
+
+  - name: If user for git repo does not exist fail
+    tags: [git]
+    fail:
+      msg: "The specified user '{{ system_git_user }}' does not exist, you need to create the user using the 'system_users' variable"
+    when: user_check.rc != 0
+
+  - name: Install git and rsync package
+    become: true
+    tags: [git]
+    package:
+      name: "{{item}}"
+      state: latest 
+    with_items:
+        - git
+        - rsync
+
+
+  - name: Copy the git bare repo from localhost to remote machine
+    tags: [git]
+    become: true
+    synchronize:
+      src: "{{system_git_repo_src}}" 
+      dest: "{{system_git_repo_dest}}"
+
+  - name: Set the permissions on repo directory that was copied
+    tags: [git]
+    become: true
+    file:
+      path: "{{ system_git_repo_dest}}"
+      state: directory
+      mode: 0744
+      owner: "{{system_git_user}}"

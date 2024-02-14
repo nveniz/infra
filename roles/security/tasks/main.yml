@@ -1,0 +1,16 @@
+---
+  # SSH
+  - include_tasks: ssh.yml 
+    tags: ["ssh"]
+  # fail2ban
+  - include_tasks: fail2ban.yml
+    when: fail2ban_enabled | bool
+    tags: ["fail2ban"]
+
+  # Firewall
+  - include_tasks: firewall.yml
+    tags: ["firewall"] 
+
+  - include_tasks: certbot.yml
+    tags: ["certbot"] 
+

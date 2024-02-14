@@ -1,0 +1,30 @@
+---
+- name: Update and Upgrade
+  become: true
+  tags: [packages]
+  apt:
+    update_cache: yes
+    upgrade: yes
+    autoremove: yes
+
+- name: Check if reboot required
+  become: true
+  tags: [packages]
+  stat:
+    path: /var/run/reboot
+  register: reboot_require_file
+
+- name: Reboot if required
+  become: true
+  tags: [packages]
+  reboot:
+    msg: Rebooting due to kernel update
+  when: reboot_require_file.stat.exists
+
+- name: Install needed packages
+  become: true
+  tags: [packages]
+  package:
+    name: "{{ system_packages }}"
+    state: latest 
+  when: system_packages | length > 0

@@ -1,0 +1,6 @@
+---
+    # To setup the docker apt
+    - include_tasks: setup.yml
+      tags: ["docker"]
+    - include_tasks: docker-rootless.yml
+      tags: ["docker"]

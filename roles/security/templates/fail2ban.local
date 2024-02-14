@@ -1,0 +1,4 @@
+[DEFAULT]
+dbmaxmatches = 0
+dbpurgeage = 20d
+

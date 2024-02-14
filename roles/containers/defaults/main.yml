@@ -1,0 +1,33 @@
+nginx_container: true
+dockermail_container: true
+
+cert_dir: "/etc/letsencrypt/live"
+
+
+# dockermail_account:
+#   - username
+#   - password
+#   - restrict -> can either be receive or send
+#   - aliases {} -> a list of aliases for the username
+#
+dockermail_acounts: []
+
+
+
+dockermail_docker_image: "mailserver/docker-mailserver"
+dockermail_docker_tag: "latest"
+dockermail_persist_dir: "/home/{{docker_compose_user}}/data/dockermail"
+dockermail_config_dir: "{{ dockermail_persist_dir }}/config"
+dockermail_dkim_size: 4096
+
+
+nginx_docker_image: "nginx"
+nginx_docker_tag: "latest"
+nginx_config_dir: "/home/{{docker_compose_user}}/data/nginx"
+nginx_data_dir: "/var/www/"
+
+docker_compose_user: 
+docker_compose_dir: "/home/{{docker_compose_user}}/"
+docker_compose_autoupdates_dir: "/home/{{docker_compose_user}}/"
+
+

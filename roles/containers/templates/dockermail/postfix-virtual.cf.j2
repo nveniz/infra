@@ -1,0 +1,7 @@
+{% for account in dockermail_accounts %}
+  {% if account.aliases is defined %}
+    {% for alias in account.aliases %}
+      {{ alias }} {{ account.username }}@{{ domain_name }}
+    {% endfor %}
+  {% endif %}
+{% endfor %}

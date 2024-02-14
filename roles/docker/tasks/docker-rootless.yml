@@ -1,0 +1,110 @@
+---
+  - name: If docker user is not set fail
+    tags: ["docker"]
+    fail: 
+      msg: "The variable 'docker_user' must be set in order for rootless docker to be installed"
+    when: docker_user is not defined
+
+  - name: Check if user exists using getent
+    tags: ["docker"]
+    command: getent passwd {{ docker_user }}
+    register: user_check
+    ignore_errors: true
+
+  - name: If docker user does not exist fail
+    tags: ["docker"]
+    fail: 
+      msg: "The specified user '{{ docker_user }}' does not exist, you need to create the user using the 'system_users' variable"
+    when: user_check.rc != 0
+
+  - name: Set {{ docker_user}} id as a fact
+    tags: ["docker"]
+    set_fact:
+        docker_user_uid: "{{ user_check.stdout.split(':')[2] }}"
+  - name: Install required dependencies
+    become: true
+    tags: ["docker"]
+    package:
+      name:
+        - acl
+        - dbus-user-session
+        - fuse-overlayfs
+        - uidmap
+        - slirp4netns
+        - docker-ce
+        - docker-ce-cli
+        - containerd.io
+        - docker-buildx-plugin
+        - docker-compose-plugin
+      state: present
+
+  - name: Stop docker.service and docker.socket
+    become: true
+    tags: ["docker"]
+    systemd:
+      name: "{{ item }}"
+      state: stopped
+      enabled: no
+    loop:
+      - docker.service
+      - docker.socket
+
+  - name: Remove docker socket
+    become: true
+    tags: ["docker"]
+    file:
+      path: "/var/run/docker.sock"
+      state: absent
+
+  - name: Expose priviledge ports to docker user
+    become: true
+    tags: ["docker"]
+    capabilities:
+      path: /usr/bin/rootlesskit
+      capability: cap_net_bind_service+ep      
+    when: docker_allow_priviledged_ports | bool
+
+  - name: Make persistant session for {{ docker_user}}
+    become: true
+    tags: ["docker"]
+    shell: loginctl enable-linger {{docker_user}}
+
+  - name: Change to the {{ docker_user}}
+    tags: ["docker"]
+    set_fact:
+      ansible_user: "{{ docker_user }}"
+      remote_user: "{{ docker_user }}"
+
+  - name: Print UID
+    tags: ["docker"]
+    debug:
+      msg: "UID of the executing user is {{ ansible_user }}"
+ 
+
+  - name: Setup rootless docker for user
+    tags: ["docker"]
+    command: /usr/bin/dockerd-rootless-setuptool.sh install
+  
+  - name: Start docker service for docker user
+    become: false
+    tags: ["docker"]
+    systemd:
+      name: docker
+      state: started
+      enabled: yes
+      scope: user
+
+  - name: Setting the DOCKER_HOST env variable
+    become: false
+    tags: ["docker"]
+    set_fact:
+        docker_socket: "unix:///run/user/{{ docker_user_uid  }}/docker.sock"
+ 
+  - name: Adding DOCKER_HOST env to .profile
+    become: false
+    tags: ["docker"]
+    lineinfile:
+      path: "/home/{{ docker_user }}/.bashrc"
+      line: "export DOCKER_HOST=unix:///run/user/{{docker_user_uid}}/docker.sock"
+      state: present
+      create: yes

@@ -1,0 +1,77 @@
+---
+#| 
+#|    ___           __                   
+#|   / _ \___ _____/ /_____ ____ ____ ___
+#|  / ___/ _ `/ __/  '_/ _ `/ _ `/ -_|_-<
+#| /_/   \_,_/\__/_/\_\\_,_/\_, /\__/___/
+#|                         /___/         
+#|___________________________________________
+
+# packages list
+system_packages: []
+
+#|    __  __              
+#|   / / / /__ ___ _______
+#|  / /_/ (_-</ -_) __(_-<
+#|  \____/___/\__/_/ /___/
+#|____________________________________________
+
+# Dictionary of users
+#
+# For each user you can set:
+#
+# - name **MANDATORY**
+# - createhome (bool value)
+# - shell (if not set then /bin/bash)
+# - ssh_key_path (pub key path to the running machine)
+system_users: {}
+
+# Dictionary to create and/or change 
+# the permissions and ownership (grp & usr) of a directory
+# 
+# For each directory item you can set:
+# - path **MANDATORY**
+# - owner
+# - group
+# - mode
+system_dir_perm_&_ownership: {}
+
+# List of sudoers with passwordless sudo
+system_sudoers_passwordless: []
+
+# List of sudoers with passworded sudo
+system_sudoers_passworded: []
+
+
+#|          _ __ 
+#|    ___ _(_) /_
+#|   / _ `/ / __/
+#|   \_, /_/\__/ 
+#|  /___/        
+#|____________________________________________
+
+system_git_setup: false
+system_git_user: ""
+system_git_repo: ""
+
+
+
+#|    ___       __                    __     __     
+#|   / _ |__ __/ /____  __ _____  ___/ /__ _/ /____ 
+#|  / __ / // / __/ _ \/ // / _ \/ _  / _ `/ __/ -_)
+#| /_/ |_\_,_/\__/\___/\_,_/ .__/\_,_/\_,_/\__/\__/ 
+#|                        /_/                       
+#|____________________________________________
+
+# Service status
+system_autoupdate_enabled: true
+# Blacklist packages
+system_autoupdate_blacklist: []
+
+# Autoupdate mail settings used on Debian/Ubuntu only.
+system_autoupdate_reboot: "false"
+system_autoupdate_reboot_time: "03:00"
+system_autoupdate_mail_to: ""
+system_autoupdate_mail_on_error: true
+
+

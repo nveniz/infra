@@ -1,0 +1,59 @@
+---
+  - name: Configure sshd_config
+    become: true
+    tags: [ssh]
+    lineinfile: 
+      dest: "{{ssh_config}}"
+      regexp: "{{item.regexp}}"
+      line: "{{item.line}}"
+      state: present
+      validate: 'sshd -T -f %s'
+    with_items:
+      - regexp: "^(#|)PasswordAuthentication"
+        line: "PasswordAuthentication {{ ssh_password_authentication }}"
+      - regexp: "^(#|)PermitRootLogin"
+        line: "PermitRootLogin {{ ssh_permit_root_login }}"
+      - regexp: "^(#|)Port"
+        line: "Port {{ ssh_port }}"
+      - regexp: "^(#|)UseDNS"
+        line: "UseDNS {{ ssh_usedns }}"
+      - regexp: "^(#|)PermitEmptyPasswords"
+        line: "PermitEmptyPasswords {{ ssh_permit_empty_password }}"
+      - regexp: "^(#|)ChallengeResponseAuthentication"
+        line: "ChallengeResponseAuthentication {{ ssh_challenge_response_auth }}"
+      - regexp: "^(#|)KbdInteractiveAuthentication"
+        line: "KbdInteractiveAuthentication {{ ssh_kbd_interactive_auth }}"
+      - regexp: "^(#|)GSSAPIAuthentication"
+        line: "GSSAPIAuthentication {{ ssh_gss_api_authentication }}"
+      - regexp: "^(#|)X11Forwarding"
+        line: "X11Forwarding {{ ssh_x11_forwarding }}"
+    notify: restart ssh
+
+  - name: Configure allowed ssh users
+    become: true
+    tags: [ssh]
+    lineinfile:
+      dest: "{{ ssh_config}}"
+      regexp: '^(#|)AllowUsers'
+      line: "AllowUsers {{ ssh_allowed_users | join(' ') }}"
+      state: present
+      create: true
+      validate: 'sshd -T -f %s'
+      mode: 0644
+    when: ssh_allowed_users | length > 0
+    notify: restart ssh
+
+  - name: Configure allowed ssh groups
+    become: true
+    tags: [ssh]
+    lineinfile:
+      dest: "{{ ssh_config}}"
+      regexp: '^(#|)AllowGroups'
+      line: "AllowGroups {{ ssh_allowed_groups | join(' ') }}"
+      state: present
+      create: true
+      validate: 'sshd -T -f %s'
+      mode: 0644
+    when: ssh_allowed_groups | length > 0
+    notify: restart ssh
+

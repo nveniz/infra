@@ -1,0 +1,67 @@
+---
+  - name: Test that all nessesarry variables are set (docker-compose)
+    become: false
+    tags: ["containers", "nginx", "dockermail"]
+    assert:
+      that:
+        - docker_compose_user | length > 0 
+        - docker_compose_dir | length > 0 
+        - docker_compose_autoupdates_dir | length > 0 
+
+  - name: Creating docker compose directory
+    become: 
+    tags: [containers, nginx, dockermail]
+    file:
+      path: "{{docker_compose_autoupdates_dir}}"
+      state: directory
+
+
+
+
+  - name: Test that all nessesarry variables are set (dockermail)
+    become: false
+    tags: ["dockermail"]
+    assert:
+      that:
+        - dockermail_docker_image | length > 0 
+        - dockermail_docker_tag | length > 0 
+        - dockermail_dkim_size 
+        - dockermail_persist_dir | length > 0 
+
+  - name: Creating dockermail directory
+    become: false
+    tags: ["dockermail"]
+    file:
+      path: "{{item}}"
+      state: directory
+    with_items:
+      - "{{dockermail_persist_dir}}"
+      - "{{dockermail_persist_dir}}/config"
+      - "{{dockermail_persist_dir}}/data"
+      - "{{dockermail_persist_dir}}/state"
+      - "{{dockermail_persist_dir}}/log"
+
+
+
+  - name: Test that all nessesarry variables are set (nginx)
+    become: false
+    tags: ["nginx"]
+    assert:
+      that:
+        - nginx_docker_image | length > 0 
+        - nginx_docker_tag | length > 0 
+        - nginx_config_dir | length > 0 
+        - nginx_data_dir | length > 0 
+
+  - name: Creating nginx directory
+    tags: ["nginx"]
+    become: false
+    file:
+      path: "{{ item }}"
+      state: directory
+    with_items:
+      - "{{nginx_config_dir}}"
+      - "{{nginx_config_dir}}/log"
+
+
+

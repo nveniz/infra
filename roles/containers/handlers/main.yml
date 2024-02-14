@@ -1,0 +1,8 @@
+---
+- name: Restart mail service
+  tags: ["dockermail"]
+  docker_container:
+    name: mailserver
+    docker_host: "{{ docker_socket | default(omit) }}"
+    restart: yes
+

@@ -1,0 +1,18 @@
+
+#   ___     _ _____  __           
+#  / _/__ _(_) /_  |/ /  ___ ____ 
+# / _/ _ `/ / / __// _ \/ _ `/ _ \
+#/_/ \_,_/_/_/____/_.__/\_,_/_//_/
+#                                 
+# # # # # # # # # # # # # # # # # # # # # # # #
+
+fail2ban_enabled: true
+fail2ban_config_template: "jail.local.j2"
+
+fail2ban_ssh: true
+
+fail2ban_dockermail: false
+fail2ban_dockermail_sasl: false
+fail2ban_dockermail_dovecot_logpath: ""
+fail2ban_dockermail_postfix_logpath: ""
+fail2ban_dockermail_postfix-sasl_logpath: ""

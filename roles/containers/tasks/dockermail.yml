@@ -1,0 +1,41 @@
+---
+# Why generate DKIM?
+#   https://support.google.com/a/answer/2466580
+# How to generate DKIM?
+#   https://docker-mailserver.github.io/docker-mailserver/edge/config/best-practices/dkim/
+
+  - name: Configure accounts, restrictions and aliases
+    become: false
+    tags: [ "dockermail" ]
+    template:
+      src: "dockermail/{{item }}.j2"
+      dest: "{{ dockermail_persist_dir }}/config/{{item}}"
+      mode: 0600
+    with_items:
+      - postfix-accounts.cf
+      - postfix-send-access.cf
+      - postfix-receive-access.cf
+      - postfix-virtual.cf
+    notify: Restart mail service
+
+  - name: Check certs directory
+    become: false
+    tags: [ "dockermail" ]
+    stat:
+      path: "{{ dockermail_persist_dir }}/config/opendkim"
+    register: dkim_is_generated
+  
+  - name: Generate DKIM key
+    become: false
+    tags: [ "dockermail" ]
+    when: not dkim_is_generated.stat.exists
+    docker_container:
+      name: dkim-certs
+      image: "{{ dockermail_docker_image }}:{{ dockermail_docker_tag }}"
+      docker_host: "{{ docker_socket | default(omit) }}"
+      auto_remove: yes
+      volumes:
+        - "{{dockermail_config_dir}}:/tmp/docker-mailserver"
+      command: "open-dkim keysize {{ dockermail_dkim_size | quote }}"
+    notify:
+      - Restart mail service

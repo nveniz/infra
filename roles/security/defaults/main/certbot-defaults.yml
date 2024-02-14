@@ -1,0 +1,6 @@
+certbot_dns_plugin: "python3-certbot-dns-ovh"
+certbot_dir: "/home/{{certbot_user}}/certbot"
+certbot_user: 
+certbot_email: "admin@{{domain_name}}"
+certbot_cron_renew_month: 1
+certbot_dryrun: true

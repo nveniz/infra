@@ -1,0 +1,23 @@
+server {
+    listen 80;
+    server_name {{ domain_name }} www.{{ domain_name }};
+
+    # Redirect all HTTP traffic to HTTPS
+    rewrite ^ https://$host$request_uri? permanent;
+}
+
+server {
+    listen 443 ssl;
+    server_name {{ domain_name }} www.{{ domain_name }};
+
+    # SSL configuration...
+    ssl_certificate /etc/nginx/certs/cert.pem;
+    ssl_certificate_key /etc/nginx/certs/privkey.pem;
+
+    # Enable HSTS with a one-year max-age and includeSubDomains
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    # Your application configuration...
+    root /var/www;
+}
+
