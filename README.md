@@ -40,10 +40,5 @@ Special thanks to [Jeff Geerling](https://github.com/geerlingguy) for providing 
 - https://github.com/geerlingguy/ansible-role-security
 - https://github.com/geerlingguy/ansible-role-firewall
 - https://github.com/hmlkao/ansible-docker-mailserver
-## Contribution
-
-Contributions to this repository are welcome! If you have improvements, bug fixes, or new features to suggest, feel free to submit a pull request.
-
-## License
 
 This project is licensed under the MIT License.
